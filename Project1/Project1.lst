@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.37.32824.0	    12/04/23 17:13:10
+Microsoft (R) Macro Assembler Version 14.37.32824.0	    12/08/23 00:49:54
 test.asm						     Page 1 - 1
 
 
@@ -96,7 +96,8 @@ test.asm						     Page 1 - 1
  000000DD			main ENDP
 
 				END main
-Microsoft (R) Macro Assembler Version 14.37.32824.0	    12/04/23 17:13:10
+				;boyi test
+Microsoft (R) Macro Assembler Version 14.37.32824.0	    12/08/23 00:49:54
 test.asm						     Symbols 2 - 1
 
 
