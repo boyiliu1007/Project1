@@ -1,9 +1,65 @@
 INCLUDE Irvine32.inc
+
+carWidth = 8
+roadWidth = 1
+graphWidth = 80
+
 .data
-consoleHandle    DWORD ?
-xyInit COORD <9, 9>	; starting coordinate
-xyBound COORD <80,25>
-xyPos COORD <9, 9>		; position of cursor
+pagePos COORD <20, 3>		; position of cursor
+list BYTE ".,,,,,,,,,,.,,,,,,,,,,,,,*,,,**,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
+	 BYTE ",,,,.,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,**,,,,,,..,..,,,,,,,,,..,..,,,,,,,,,,,,,,,,"
+	 BYTE "..........,,,,,,,,,,,,,,...,.,.,,.,,,,,,,,,,,..,..,,,,,,,,,,,.......,,,,,,,,,,,,"
+	 BYTE "..................,..,,,,,,,,,,,,...,,.,,,,,...,,,,,,,,,,,,......,,,,,,,,,,,,,,,"
+	 BYTE ".... ............ .......,,,,,,,,,,,,*((%%%%(,,,,,,,,,,,,,.......,,,,,,,,,,,,,,,"
+	 BYTE ".........................,,.......,(%&%%%%%%%%%,.....,,,........,,..,,,,,,,,,,,,"
+	 BYTE "............. .....  ............,%%((/////**/%*,...,,,,,,,....,,,...,,,,,,,,,,,"
+	 BYTE "............  ... .......,.,.....,%%((((//(///%,....,,,,,,,,,..,,......,,,,,,,,,"
+	 BYTE "......... .................,,,..,,(((((((////*/%.,,,,,,..,,,,,,,,,,.....,,,,,,,,"
+	 BYTE "....   .   .........      ...,,,,,((((((((/////,,,,,,......,,,,,,,,.  .....,,,,,"
+	 BYTE "   . .......................,,,,,,,,/(((%/%///,,,,,,,,,,,,,,,,,,,,,,,..,,,,,,,,,"
+ 	 BYTE " .       ..........  .     ..,,,,,,%/%(((/%%%/,,,,............,,,,,,,........,,,"
+ 	 BYTE "        ......... ....  .....,*(%&&&/%%%%%(%%(%%%,,,,....,....,,,,,,,,,.....,,,,"
+	 BYTE " ........................,(%&&&&&&&&&/,(/(%**,,&%&&&&&&,*/****,,,,.,,,,,,,,,,,,,"
+	 BYTE " . ..... . ..,,,....,./&&&&&&&&%%&&&&%/*,/(**,,%%&&&&%&%%,,,,..,,,....,,,,,,...."
+	 BYTE ". .....  . .,,,,.,..,,%&&&&&&&%/(%&&&&%%/****(&&%&&&&&&&%,,,...,,,.....,,,,,.,.."
+	 BYTE "......... .,,,,.....,,%&&&&&&&(%%////&&/****/(&&&&&&&&&&&,,.,,.,,,,...,,,,,,,,.."
+	 BYTE "..     ..,,,,,,,,,****(&&&&&&&%%%%(/(&&*****&@&&&&&&&&&&&,,,....,,,,,,,,..,,,,,,"
+	 BYTE ".      ..,,,,,.,,,,,,/%%&&&&@&%%%(%&&&&&/(%(%&&&&&&&&&&&&,......,,,,,.,......,,,"
+	 BYTE "       ...,,,,,,,,,,/%%&&&&%%&&%%(&&&&&&%%%((@&&&&&&&&&&&,,,,...,,,,...,,,,,,,,,"
+	 BYTE "    .  ...,,,,,,,,,,%%%%%&%&&&%%&@&&&&&&%%(&@&&&&&&&&@@&&,,,,,,,,,,....,,,.,,,,,"
+	 BYTE ".........,,*,,,,,,,,%&&&&&@@(@&&&@@&&&&&%((&@@&&&&&@&&&%,,,,,,,,,*,,,,,,,,,,,,,,"
+	 BYTE "......,.,,,**,,,,,,(&@@&@@@@@@@@@@@@@&&&%%(%@&@&&&@&&&&,,,,,,,,,,,,,,,,,,,,,,,,,"
+	 BYTE "...,,,,,,*,*,,,,,,,,*&@&@@@@@@@@@@@@@@&&%%&%@@&&&@&&&&%,,,,,,,,,,,,,,,,,,,,,,,,,"
+	 BYTE "                                                                                "
+	 BYTE "                                                                                "
+	 BYTE "                             Press Any Key To Start                             "
+outputHandle    DWORD ?
+carInit COORD <74, 20>	; starting coordinate
+carUpperBound COORD <75,20>
+carLowerBound COORD <45, 20>
+carPos COORD <0, 0>		; position of cursor
+obstaclePos1 COORD <0, 0>
+obstaclePos2 COORD <0, 0>
+obstaclePos3 COORD <0, 0>
+cursorInfo CONSOLE_CURSOR_INFO <1, TRUE> ; set cursor size to 1 and visibility to FALSE (block cursor)
+block1 BYTE " ______ "
+	   BYTE	"/==  ==\"
+	   BYTE	"|[____]|"
+	   BYTE	"||    ||"
+	   BYTE	"||____||"
+	   BYTE	"!______!"
+road BYTE "#"
+count DWORD 0
+rightRoadPos COORD <83, 0>
+leftRoadPos COORD <44, 0>
+dwSize COORD <150, 100>
+timer word 100;
+checkForOb byte 0
+counter byte 0
+score DWORD 0
+
+sysTime SYSTEMTIME <>   ; SYSTEMTIME structure to hold system time
+check byte 0
 
 main EQU start@0
 .code
@@ -11,58 +67,566 @@ main PROC
 
 ; Get the Console standard output handle:
 	INVOKE GetStdHandle, STD_OUTPUT_HANDLE
-	mov consoleHandle,eax
+	mov outputHandle, eax
+	
+	; Set the cursor size and visibility
+
+
+; Set the start page
+	mov ecx, 27
+Start_Page: 
+	push ecx
+	mov esi, 27
+	sub esi, ecx
+	imul esi, graphWidth
+	mov eax, offset list
+	add eax, esi
+	INVOKE WriteConsoleOutputCharacter,
+	   outputHandle,	; console output handle
+	   eax,	; pointer to the top box line
+	   graphWidth ,	; size of box line
+	   PagePos,	; coordinates of first char
+	   addr count	; output count
+	add PagePos.y, 1
+	pop ecx 
+	loop Start_Page
+	Invoke Sleep, 1000
+	call ReadChar
+	
 ; set the starting position	
 INITIAL:
-	mov ax,xyInit.x
-	mov xyPos.x,ax
-	mov ax,xyInit.y
-	mov xyPos.y,ax
+	mov ax, carInit.x
+	mov carPos.x, ax
+	mov ax, carInit.y
+	mov carPos.y, ax
+	INVOKE SetConsoleScreenBufferSize,
+		outputHandle, ; handle to screen buffer
+		dwSize; new screen buffer size
+
+	Obstacle:
+		call Randomize
+		call SetObstacle1
+		call SetObstacle2
+		call SetObstacle3
+
+timeline:
+	INVOKE GetLocalTime, ADDR sysTime   ; Get the current system time
+	movzx eax, sysTime.wMilliseconds  ; Load milliseconds part of the time
+	mov edx,0
+	div timer
+	cmp edx, 50         ; Check if milliseconds >= 50
+	;mov eax, edx
+	;call WriteInt
+	jl timeline        ; Jump back if less than 50
+
 START:
 	call ClrScr
-	INVOKE SetConsoleCursorPosition, consoleHandle, xyPos
-	call ReadChar
-	.IF ax == 4800h ;UP ARROW
-		sub xyPos.y,1
-	.ENDIF
-	.IF ax == 5000h ;DOWN ARROW
-		add xyPos.y,1
-	.ENDIF
-	.IF ax == 4B00h ;LEFT ARROW
-		sub xyPos.x,1
-	.ENDIF
-	.IF ax == 4d00h ;RIGHT ARROW
-		add xyPos.x,1
-	.ENDIF
-	.IF ax == 011Bh ;ESC
-		jmp END_FUNC
-	.ENDIF
+
+	;print Road================================================
+	push ecx
+	mov ecx, 0
+	mov cx, dwSize.y
+	mov rightRoadPos.y, 0
+	mov leftRoadPos.y, 0
+PrintRoad:
+	push ecx
+
+	INVOKE WriteConsoleOutputCharacter,
+	   outputHandle,	; console output handle
+	   addr road,	; pointer to the top box line
+	   roadWidth ,	; size of box line
+	   rightRoadPos,	; coordinates of first char
+	   addr count	; output count
+	INVOKE WriteConsoleOutputCharacter,
+	   outputHandle,	; console output handle
+	   addr road,	; pointer to the top box line
+	   roadWidth ,	; size of box line
+	   leftRoadPos,	; coordinates of first char
+	   addr count	; output count
+	pop ecx
+	inc rightRoadPos.y  ; Increment the y-coordinate for the road
+	inc leftRoadPos.y  ; Increment the y-coordinate for the road
+	loop PrintRoad
+	pop ecx
+	;print Road==============================================================
+
+	push ecx
+	mov ecx, 6
+PrintCar:
+	; Print car blocks at the car position=======================================
+	push ecx
+	mov esi, 6
+	sub esi, ecx
+	imul esi, carWidth
+	mov eax, offset block1
+	add eax, esi
+	INVOKE WriteConsoleOutputCharacter,
+	   outputHandle,	; console output handle
+	   eax,	; pointer to the top box line
+	   carWidth ,	; size of box line
+	   carPos,	; coordinates of first char
+	   addr count	; output count
+	add carPos.y, 1
+	pop ecx
+	loop PrintCar
+	pop ecx
+	sub carPos.y, 6
+	; Print car blocks at the car position=======================================
+
+
+
+	push ecx
+	mov ecx, 6
+PrintObstacle1:
+	; Print car blocks at the car position=======================================
+	push ecx
+	mov esi, 6
+	sub esi, ecx
+	imul esi, carWidth
+	mov eax, offset block1
+	add eax, esi
+	INVOKE WriteConsoleOutputCharacter,
+	   outputHandle,	; console output handle
+	   eax,	; pointer to the top box line
+	   carWidth ,	; size of box line
+	   obstaclePos1,	; coordinates of first char
+	   addr count	; output count
+	add obstaclePos1.y, 1
+	pop ecx
+	loop PrintObstacle1
+	pop ecx
+	sub obstaclePos1.y, 6
+	; Print car blocks at the car position=======================================
 	
 	
-	.IF xyPos.x == 0h ;x lowerbound
-		add xyPos.x,1
-	.ENDIF
-	mov ax,xyBound.x
-	.IF xyPos.x == ax ;x upperbound
-		sub xyPos.x,1
-	.ENDIF
+	push ecx
+	mov ecx, 6
+PrintObstacle2:
+	; Print car blocks at the car position=======================================
+	push ecx
+	mov esi, 6
+	sub esi, ecx
+	imul esi, carWidth
+	mov eax, offset block1
+	add eax, esi
+	INVOKE WriteConsoleOutputCharacter,
+	   outputHandle,	; console output handle
+	   eax,	; pointer to the top box line
+	   carWidth ,	; size of box line
+	   obstaclePos2,	; coordinates of first char
+	   addr count	; output count
+	add obstaclePos2.y, 1
+	pop ecx
+	loop PrintObstacle2
+	pop ecx
+	sub obstaclePos2.y, 6
+	; Print car blocks at the car position=======================================
 	
-	.IF xyPos.y == 0h ;y lowerbound
-		add xyPos.y,1
-	.ENDIF
-	mov ax,xyBound.y
-	.IF xyPos.y == ax ;y upperbound
-		sub xyPos.y,1
-	.ENDIF
+	push ecx
+	mov ecx, 6
+PrintObstacle3:
+	; Print car blocks at the car position=======================================
+	push ecx
+	mov esi, 6
+	sub esi, ecx
+	imul esi, carWidth
+	mov eax, offset block1
+	add eax, esi
+	INVOKE WriteConsoleOutputCharacter,
+	   outputHandle,	; console output handle
+	   eax,	; pointer to the top box line
+	   carWidth ,	; size of box line
+	   obstaclePos3,	; coordinates of first char
+	   addr count	; output count
+	add obstaclePos3.y, 1
+	pop ecx
+	loop PrintObstacle3
+	pop ecx
+	sub obstaclePos3.y, 6
+	; Print car blocks at the car position=======================================
 	
-	jmp START
+
+Speed:
+	mov al, counter
+	inc al
+	mov counter, al
+	.IF counter == 2
+		mov counter, 0
+		add obstaclePos1.y, 1
+		add obstaclePos2.y, 1
+		add obstaclePos3.y, 1
+	.ENDIF
+
+CheckObstacle:
+	.IF obstaclePos1.y == 25
+		call SetObstacle1
+	.ENDIF
+	.IF obstaclePos2.y == 25
+		call SetObstacle2
+	.ENDIF
+	.IF obstaclePos3.y == 25
+		call SetObstacle3
+	.ENDIF
+
+CrashTest:
+	mov ax, obstaclePos1.y
+	add ax, 5
+	.IF ax == carPos.y
+		mov ax, obstaclePos1.x
+		mov bx, carPos.x
+		add bx, 7
+	.IF ax <= bx
+		add ax, 7
+	.IF ax >= bx
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos1.y
+	add ax, 5
+	.IF ax == carPos.y
+		mov ax, obstaclePos1.x
+	.IF ax <= carPos.x
+		add ax, 7
+	.IF ax >= carPos.x
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos1.x
+	add ax, 7
+	.IF ax == carPos.x
+		mov ax, obstaclePos1.y
+	.IF ax <= carPos.y
+		add ax, 5
+	.IF ax >= carPos.y
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, carPos.x
+	add ax, 7
+	.IF ax == obstaclePos1.x
+		mov ax, carPos.y
+	.IF ax >= obstaclePos1.y
+		mov bx, obstaclePos1.y
+		add bx, 5
+	.IF ax <= bx
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos1.x
+	add ax, 7
+	.IF ax == carPos.x
+		mov ax, obstaclePos1.y
+		mov bx, carPos.y
+		add bx, 5
+	.IF ax <= bx
+		add ax, 5
+	.IF ax >= bx
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, carPos.x
+	add ax, 7
+	.IF ax == obstaclePos1.x
+		mov ax, carPos.y
+		add ax, 5
+	.IF ax >= obstaclePos1.y
+		mov bx, obstaclePos1.y
+		add bx, 5
+	.IF ax <= bx
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos2.y
+	add ax, 5
+	.IF ax == carPos.y
+		mov ax, obstaclePos2.x
+		mov bx, carPos.x
+		add bx, 7
+	.IF ax <= bx
+		add ax, 7
+	.IF ax >= bx
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos2.y
+	add ax, 5
+	.IF ax == carPos.y
+		mov ax, obstaclePos2.x
+	.IF ax <= carPos.x
+		add ax, 7
+	.IF ax >= carPos.x
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos2.x
+	add ax, 7
+	.IF ax == carPos.x
+		mov ax, obstaclePos2.y
+	.IF ax <= carPos.y
+		add ax, 5
+	.IF ax >= carPos.y
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, carPos.x
+	add ax, 7
+	.IF ax == obstaclePos2.x
+		mov ax, carPos.y
+	.IF ax >= obstaclePos2.y
+		mov bx, obstaclePos2.y
+		add bx, 5
+	.IF ax <= bx
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos2.x
+	add ax, 7
+	.IF ax == carPos.x
+		mov ax, obstaclePos2.y
+		mov bx, carPos.y
+		add bx, 5
+	.IF ax <= bx
+		add ax, 5
+	.IF ax >= bx
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, carPos.x
+	add ax, 7
+	.IF ax == obstaclePos2.x
+		mov ax, carPos.y
+		add ax, 5
+	.IF ax >= obstaclePos2.y
+		mov bx, obstaclePos2.y
+		add bx, 5
+	.IF ax <= bx
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos3.y
+	add ax, 5
+	.IF ax == carPos.y
+		mov ax, obstaclePos3.x
+		mov bx, carPos.x
+		add bx, 7
+	.IF ax <= bx
+		add ax, 7
+	.IF ax >= bx
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos3.y
+	add ax, 5
+	.IF ax == carPos.y
+		mov ax, obstaclePos3.x
+	.IF ax <= carPos.x
+		add ax, 7
+	.IF ax >= carPos.x
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos3.x
+	add ax, 7
+	.IF ax == carPos.x
+		mov ax, obstaclePos3.y
+	.IF ax <= carPos.y
+		add ax, 5
+	.IF ax >= carPos.y
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, carPos.x
+	add ax, 7
+	.IF ax == obstaclePos3.x
+		mov ax, carPos.y
+	.IF ax >= obstaclePos3.y
+		mov bx, obstaclePos3.y
+		add bx, 5
+	.IF ax <= bx
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos3.x
+	add ax, 7
+	.IF ax == carPos.x
+		mov ax, obstaclePos3.y
+		mov bx, carPos.y
+		add bx, 5
+	.IF ax <= bx
+		add ax, 5
+	.IF ax >= bx
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, carPos.x
+	add ax, 7
+	.IF ax == obstaclePos3.x
+		mov ax, carPos.y
+		add ax, 5
+	.IF ax >= obstaclePos3.y
+		mov bx, obstaclePos3.y
+		add bx, 5
+	.IF ax <= bx
+		jmp END_Page
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+KBCheck:
+	;detect move==============================================================
+	.if check==0
+		call ReadKey
+		.IF ax == 4B00h ;LEFT ARROW
+			mov check, 1
+			sub carPos.x, 1
+		.ENDIF
+		.IF ax == 4d00h ;RIGHT ARROW
+			mov check, 1
+			add carPos.x, 1
+		.ENDIF
+		.IF ax == 011Bh ;ESC
+			jmp END_FUNC
+		.ENDIF
+	
+		mov ax, carLowerBound.x
+		.IF carPos.x == ax ; x lowerbound
+			add carPos.x, 1
+		.ENDIF
+		mov ax, carUpperBound.x
+		.IF carPos.x == ax ; x upperbound
+			sub carPos.x, 1
+		.ENDIF
+		.IF check==1
+			jmp START
+		.ENDIF
+	.ENDIF
+	;detect move===============================================================
+
+
+time_buffer:
+	INVOKE GetLocalTime, ADDR                                             sysTime   ; Get the current system time
+	movzx eax, sysTime.wMilliseconds  ; Load milliseconds part of the time
+	mov edx,0
+	div timer
+	cmp edx, 50         ; Check if milliseconds >= 49
+	jge KBCheck
+	mov check, 0
+	jmp timeline      ; Repeat 'count' times
+
+END_Page:
+	call ClrScr
+	sub PagePos.y, 28
+	mov ecx, 27
+	jmp Start_Page
 END_FUNC:
 	exit
+
+InitObstacle1 PROC
+	xor bx, bx
+SetObstacle1X:
+	mov ax, 30
+	call RandomRange
+	add bx, ax
+	cmp	bx, 45
+	jb SetObstacle1X
+	mov obstaclePos1.x, bx
+SetObstacle1Y:
+	xor bx, bx
+	mov ax, 20
+	call RandomRange
+	mov bx, ax
+	mov obstaclePos1.y, bx
+
+	ret
+InitObstacle1 ENDP
+
+SetObstacle2 PROC
+	xor bx, bx
+SetObstacle2X:
+	mov ax, 30
+	call RandomRange
+	add bx, ax
+	cmp	bx, 45
+	jb SetObstacle2X
+	mov obstaclePos2.x, bx
+SetObstacle2Y:
+	xor bx, bx
+	mov bx, obstaclePos1.y
+	sub bx, 20
+	mov obstaclePos2.y, bx
+
+	ret
+SetObstacle2 ENDP
+
+SetObstacle3 PROC
+	xor bx, bx
+SetObstacle3X:
+	mov ax, 30
+	call RandomRange
+	add bx, ax
+	cmp	bx, 45
+	jb SetObstacle3X
+	mov obstaclePos3.x, bx
+SetObstacle3Y:
+	xor bx, bx
+	mov bx, obstaclePos2.y
+	sub bx, 20
+	mov obstaclePos3.y, bx
+
+	ret
+SetObstacle3 ENDP
+
+SetObstacle1 PROC
+	xor bx, bx
+SetObstacle1X:
+	mov ax, 24
+	call RandomRange
+	add bx, ax
+	cmp	bx, 50
+	jb SetObstacle1X
+	mov obstaclePos1.x, bx
+SetObstacle1Y:
+	xor bx, bx
+	mov bx, obstaclePos3.y
+	sub bx, 15
+	mov obstaclePos1.y, bx
+
+	ret
+SetObstacle1 ENDP
 main ENDP
 
 END main
-;boyi test
-;boyi test 2
-;boyi test 3
-;boyi test 4
-;boyi test 5
