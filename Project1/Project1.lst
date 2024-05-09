@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.37.32824.0	    12/18/23 14:10:55
+Microsoft (R) Macro Assembler Version 14.37.32824.0	    01/08/24 17:27:24
 test.asm						     Page 1 - 1
 
 
@@ -20,6 +20,11 @@ test.asm						     Page 1 - 1
 			      C .NOLIST
 			      C .LIST
 			      C 
+
+				PrintCarProc PROTO,
+					pos:COORD 
+				CrashTest PROTO, 
+					obstaclePos: COORD,
 
  = 00000008			carWidth = 8
  = 00000001			roadWidth = 1
@@ -545,9 +550,9 @@ test.asm						     Page 1 - 1
 
  0000007F				Obstacle:
  0000007F  E8 00000000 E			call Randomize
- 00000084  E8 00000750				call SetObstacle1
- 00000089  E8 000006E7				call SetObstacle2
- 0000008E  E8 00000714				call SetObstacle3
+ 00000084  E8 0000023B				call SetObstacle1
+ 00000089  E8 00000268				call SetObstacle2
+ 0000008E  E8 00000295				call SetObstacle3
 
  00000093			timeline:
 					INVOKE GetLocalTime, ADDR sysTime   ; Get the current system time
@@ -599,570 +604,320 @@ test.asm						     Page 1 - 1
  00000125  59				pop ecx
 					;print Road==============================================================
 
- 00000126  51				push ecx
- 00000127  B9 00000006			mov ecx, 6
- 0000012C			PrintCar:
-					; Print car blocks at the car position=======================================
- 0000012C  51				push ecx
- 0000012D  BE 00000006			mov esi, 6
- 00000132  2B F1			sub esi, ecx
- 00000134  6B F6 08			imul esi, carWidth
- 00000137  B8 0000089C R		mov eax, offset block1
- 0000013C  03 C6			add eax, esi
-					INVOKE WriteConsoleOutputCharacter,
-					   outputHandle,	; console output handle
-					   eax,	; pointer to the top box line
-					   carWidth ,	; size of box line
-					   carPos,	; coordinates of first char
-					   addr count	; output count
- 00000157  66| 83 05			add carPos.y, 1
-	   00000886 R 01
- 0000015F  59				pop ecx
- 00000160  E2 CA			loop PrintCar
- 00000162  59				pop ecx
- 00000163  66| 83 2D			sub carPos.y, 6
-	   00000886 R 06
-					; Print car blocks at the car position=======================================
-
-
-
- 0000016B  51				push ecx
- 0000016C  B9 00000006			mov ecx, 6
- 00000171			PrintObstacle1:
-					; Print car blocks at the car position=======================================
- 00000171  51				push ecx
- 00000172  BE 00000006			mov esi, 6
- 00000177  2B F1			sub esi, ecx
- 00000179  6B F6 08			imul esi, carWidth
- 0000017C  B8 0000089C R		mov eax, offset block1
- 00000181  03 C6			add eax, esi
-					INVOKE WriteConsoleOutputCharacter,
-					   outputHandle,	; console output handle
-					   eax,	; pointer to the top box line
-					   carWidth ,	; size of box line
-					   obstaclePos1,	; coordinates of first char
-					   addr count	; output count
- 0000019C  66| 83 05			add obstaclePos1.y, 1
-	   0000088A R 01
- 000001A4  59				pop ecx
- 000001A5  E2 CA			loop PrintObstacle1
- 000001A7  59				pop ecx
- 000001A8  66| 83 2D			sub obstaclePos1.y, 6
-	   0000088A R 06
-					; Print car blocks at the car position=======================================
 					
+ 00000126			PrintCar:
+					INVOKE PrintCarProc,
+						carPos
 					
- 000001B0  51				push ecx
- 000001B1  B9 00000006			mov ecx, 6
- 000001B6			PrintObstacle2:
-					; Print car blocks at the car position=======================================
- 000001B6  51				push ecx
- 000001B7  BE 00000006			mov esi, 6
- 000001BC  2B F1			sub esi, ecx
- 000001BE  6B F6 08			imul esi, carWidth
- 000001C1  B8 0000089C R		mov eax, offset block1
- 000001C6  03 C6			add eax, esi
-					INVOKE WriteConsoleOutputCharacter,
-					   outputHandle,	; console output handle
-					   eax,	; pointer to the top box line
-					   carWidth ,	; size of box line
-					   obstaclePos2,	; coordinates of first char
-					   addr count	; output count
- 000001E1  66| 83 05			add obstaclePos2.y, 1
-	   0000088E R 01
- 000001E9  59				pop ecx
- 000001EA  E2 CA			loop PrintObstacle2
- 000001EC  59				pop ecx
- 000001ED  66| 83 2D			sub obstaclePos2.y, 6
-	   0000088E R 06
-					; Print car blocks at the car position=======================================
+ 00000131			PrintObstacle1:
+					INVOKE PrintCarProc,
+						obstaclePos1
 					
- 000001F5  51				push ecx
- 000001F6  B9 00000006			mov ecx, 6
- 000001FB			PrintObstacle3:
-					; Print car blocks at the car position=======================================
- 000001FB  51				push ecx
- 000001FC  BE 00000006			mov esi, 6
- 00000201  2B F1			sub esi, ecx
- 00000203  6B F6 08			imul esi, carWidth
- 00000206  B8 0000089C R		mov eax, offset block1
- 0000020B  03 C6			add eax, esi
-					INVOKE WriteConsoleOutputCharacter,
-					   outputHandle,	; console output handle
-					   eax,	; pointer to the top box line
-					   carWidth ,	; size of box line
-					   obstaclePos3,	; coordinates of first char
-					   addr count	; output count
- 00000226  66| 83 05			add obstaclePos3.y, 1
-	   00000892 R 01
- 0000022E  59				pop ecx
- 0000022F  E2 CA			loop PrintObstacle3
- 00000231  59				pop ecx
- 00000232  66| 83 2D			sub obstaclePos3.y, 6
-	   00000892 R 06
-					; Print car blocks at the car position=======================================
+ 0000013C			PrintObstacle2:
+					INVOKE PrintCarProc,
+						obstaclePos2
+					
+ 00000147			PrintObstacle3:
+					INVOKE PrintCarProc,
+						obstaclePos3
 					
 
- 0000023A			Speed:
- 0000023A  A0 000008E0 R		mov al, counter
- 0000023F  FE C0			inc al
- 00000241  A2 000008E0 R		mov counter, al
+ 00000152			Speed:
+ 00000152  A0 000008E0 R		mov al, counter
+ 00000157  FE C0			inc al
+ 00000159  A2 000008E0 R		mov counter, al
 					.IF counter == 2
- 0000024F  C6 05 000008E0 R			mov counter, 0
+ 00000167  C6 05 000008E0 R			mov counter, 0
 	   00
- 00000256  66| 83 05				add obstaclePos1.y, 1
+ 0000016E  66| 83 05				add obstaclePos1.y, 1
 	   0000088A R 01
- 0000025E  66| 83 05				add obstaclePos2.y, 1
+ 00000176  66| 83 05				add obstaclePos2.y, 1
 	   0000088E R 01
- 00000266  66| 83 05				add obstaclePos3.y, 1
+ 0000017E  66| 83 05				add obstaclePos3.y, 1
 	   00000892 R 01
 					.ENDIF
 
- 0000026E			CheckObstacle:
+ 00000186			CheckObstacle:
 					.IF obstaclePos1.y == 25
- 00000278  E8 0000055C				call SetObstacle1
+ 00000190  E8 0000012F				call SetObstacle1
 					.ENDIF
 					.IF obstaclePos2.y == 25
- 00000287  E8 000004E9				call SetObstacle2
+ 0000019F  E8 00000152				call SetObstacle2
 					.ENDIF
 					.IF obstaclePos3.y == 25
- 00000296  E8 0000050C				call SetObstacle3
+ 000001AE  E8 00000175				call SetObstacle3
 					.ENDIF
 
- 0000029B			CrashTest:
- 0000029B  66| A1			mov ax, obstaclePos1.y
-	   0000088A R
- 000002A1  66| 83 C0 05			add ax, 5
-					.IF ax == carPos.y
- 000002AE  66| A1				mov ax, obstaclePos1.x
-	   00000888 R
- 000002B4  66| 8B 1D				mov bx, carPos.x
-	   00000884 R
- 000002BB  66| 83 C3 07				add bx, 7
-					.IF ax <= bx
- 000002C4  66| 83 C0 07				add ax, 7
-					.IF ax >= bx
- 000002CD  E9 00000452				jmp END_Page
+ 000001B3			TestCar:
+					INVOKE CrashTest, obstaclePos1
+					.IF ax == 1
+ 000001C4  E9 000000DD				jmp END_Page
 					.ENDIF
+					INVOKE CrashTest, obstaclePos2
+					.IF ax == 1
+ 000001DA  E9 000000C7				jmp END_Page
 					.ENDIF
+					Invoke CrashTest, obstaclePos3
+					.IF ax == 1
+ 000001F0  E9 000000B1				jmp END_Page
 					.ENDIF
+					
 
- 000002D2  66| A1			mov ax, obstaclePos1.y
-	   0000088A R
- 000002D8  66| 83 C0 05			add ax, 5
-					.IF ax == carPos.y
- 000002E5  66| A1				mov ax, obstaclePos1.x
-	   00000888 R
-					.IF ax <= carPos.x
- 000002F4  66| 83 C0 07				add ax, 7
-					.IF ax >= carPos.x
- 00000301  E9 0000041E				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 00000306  66| A1			mov ax, obstaclePos1.x
-	   00000888 R
- 0000030C  66| 83 C0 07			add ax, 7
-					.IF ax == carPos.x
- 00000319  66| A1				mov ax, obstaclePos1.y
-	   0000088A R
-					.IF ax <= carPos.y
- 00000328  66| 83 C0 05				add ax, 5
-					.IF ax >= carPos.y
- 00000335  E9 000003EA				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 0000033A  66| A1			mov ax, carPos.x
-	   00000884 R
- 00000340  66| 83 C0 07			add ax, 7
-					.IF ax == obstaclePos1.x
- 0000034D  66| A1				mov ax, carPos.y
-	   00000886 R
-					.IF ax >= obstaclePos1.y
- 0000035C  66| 8B 1D				mov bx, obstaclePos1.y
-	   0000088A R
- 00000363  66| 83 C3 05				add bx, 5
-					.IF ax <= bx
- 0000036C  E9 000003B3				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 00000371  66| A1			mov ax, obstaclePos1.x
-	   00000888 R
- 00000377  66| 83 C0 07			add ax, 7
-					.IF ax == carPos.x
- 00000384  66| A1				mov ax, obstaclePos1.y
-	   0000088A R
- 0000038A  66| 8B 1D				mov bx, carPos.y
-	   00000886 R
- 00000391  66| 83 C3 05				add bx, 5
-					.IF ax <= bx
- 0000039A  66| 83 C0 05				add ax, 5
-					.IF ax >= bx
- 000003A3  E9 0000037C				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 000003A8  66| A1			mov ax, carPos.x
-	   00000884 R
- 000003AE  66| 83 C0 07			add ax, 7
-					.IF ax == obstaclePos1.x
- 000003BB  66| A1				mov ax, carPos.y
-	   00000886 R
- 000003C1  66| 83 C0 05				add ax, 5
-					.IF ax >= obstaclePos1.y
- 000003CE  66| 8B 1D				mov bx, obstaclePos1.y
-	   0000088A R
- 000003D5  66| 83 C3 05				add bx, 5
-					.IF ax <= bx
- 000003DE  E9 00000341				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 000003E3  66| A1			mov ax, obstaclePos2.y
-	   0000088E R
- 000003E9  66| 83 C0 05			add ax, 5
-					.IF ax == carPos.y
- 000003F6  66| A1				mov ax, obstaclePos2.x
-	   0000088C R
- 000003FC  66| 8B 1D				mov bx, carPos.x
-	   00000884 R
- 00000403  66| 83 C3 07				add bx, 7
-					.IF ax <= bx
- 0000040C  66| 83 C0 07				add ax, 7
-					.IF ax >= bx
- 00000415  E9 0000030A				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 0000041A  66| A1			mov ax, obstaclePos2.y
-	   0000088E R
- 00000420  66| 83 C0 05			add ax, 5
-					.IF ax == carPos.y
- 0000042D  66| A1				mov ax, obstaclePos2.x
-	   0000088C R
-					.IF ax <= carPos.x
- 0000043C  66| 83 C0 07				add ax, 7
-					.IF ax >= carPos.x
- 00000449  E9 000002D6				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 0000044E  66| A1			mov ax, obstaclePos2.x
-	   0000088C R
- 00000454  66| 83 C0 07			add ax, 7
-					.IF ax == carPos.x
- 00000461  66| A1				mov ax, obstaclePos2.y
-	   0000088E R
-					.IF ax <= carPos.y
- 00000470  66| 83 C0 05				add ax, 5
-					.IF ax >= carPos.y
- 0000047D  E9 000002A2				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 00000482  66| A1			mov ax, carPos.x
-	   00000884 R
- 00000488  66| 83 C0 07			add ax, 7
-					.IF ax == obstaclePos2.x
- 00000495  66| A1				mov ax, carPos.y
-	   00000886 R
-					.IF ax >= obstaclePos2.y
- 000004A4  66| 8B 1D				mov bx, obstaclePos2.y
-	   0000088E R
- 000004AB  66| 83 C3 05				add bx, 5
-					.IF ax <= bx
- 000004B4  E9 0000026B				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 000004B9  66| A1			mov ax, obstaclePos2.x
-	   0000088C R
- 000004BF  66| 83 C0 07			add ax, 7
-					.IF ax == carPos.x
- 000004CC  66| A1				mov ax, obstaclePos2.y
-	   0000088E R
- 000004D2  66| 8B 1D				mov bx, carPos.y
-	   00000886 R
- 000004D9  66| 83 C3 05				add bx, 5
-					.IF ax <= bx
- 000004E2  66| 83 C0 05				add ax, 5
-					.IF ax >= bx
- 000004EB  E9 00000234				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 000004F0  66| A1			mov ax, carPos.x
-	   00000884 R
- 000004F6  66| 83 C0 07			add ax, 7
-					.IF ax == obstaclePos2.x
- 00000503  66| A1				mov ax, carPos.y
-	   00000886 R
- 00000509  66| 83 C0 05				add ax, 5
-					.IF ax >= obstaclePos2.y
- 00000516  66| 8B 1D				mov bx, obstaclePos2.y
-	   0000088E R
- 0000051D  66| 83 C3 05				add bx, 5
-					.IF ax <= bx
- 00000526  E9 000001F9				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 0000052B  66| A1			mov ax, obstaclePos3.y
-	   00000892 R
- 00000531  66| 83 C0 05			add ax, 5
-					.IF ax == carPos.y
- 0000053E  66| A1				mov ax, obstaclePos3.x
-	   00000890 R
- 00000544  66| 8B 1D				mov bx, carPos.x
-	   00000884 R
- 0000054B  66| 83 C3 07				add bx, 7
-					.IF ax <= bx
- 00000554  66| 83 C0 07				add ax, 7
-					.IF ax >= bx
- 0000055D  E9 000001C2				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 00000562  66| A1			mov ax, obstaclePos3.y
-	   00000892 R
- 00000568  66| 83 C0 05			add ax, 5
-					.IF ax == carPos.y
- 00000575  66| A1				mov ax, obstaclePos3.x
-	   00000890 R
-					.IF ax <= carPos.x
- 00000584  66| 83 C0 07				add ax, 7
-					.IF ax >= carPos.x
- 00000591  E9 0000018E				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 00000596  66| A1			mov ax, obstaclePos3.x
-	   00000890 R
- 0000059C  66| 83 C0 07			add ax, 7
-					.IF ax == carPos.x
- 000005A9  66| A1				mov ax, obstaclePos3.y
-	   00000892 R
-					.IF ax <= carPos.y
- 000005B8  66| 83 C0 05				add ax, 5
-					.IF ax >= carPos.y
- 000005C5  E9 0000015A				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 000005CA  66| A1			mov ax, carPos.x
-	   00000884 R
- 000005D0  66| 83 C0 07			add ax, 7
-					.IF ax == obstaclePos3.x
- 000005DD  66| A1				mov ax, carPos.y
-	   00000886 R
-					.IF ax >= obstaclePos3.y
- 000005EC  66| 8B 1D				mov bx, obstaclePos3.y
-	   00000892 R
- 000005F3  66| 83 C3 05				add bx, 5
-					.IF ax <= bx
- 000005FC  E9 00000123				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 00000601  66| A1			mov ax, obstaclePos3.x
-	   00000890 R
- 00000607  66| 83 C0 07			add ax, 7
-					.IF ax == carPos.x
- 00000614  66| A1				mov ax, obstaclePos3.y
-	   00000892 R
- 0000061A  66| 8B 1D				mov bx, carPos.y
-	   00000886 R
- 00000621  66| 83 C3 05				add bx, 5
-					.IF ax <= bx
- 0000062A  66| 83 C0 05				add ax, 5
-					.IF ax >= bx
- 00000633  E9 000000EC				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 00000638  66| A1			mov ax, carPos.x
-	   00000884 R
- 0000063E  66| 83 C0 07			add ax, 7
-					.IF ax == obstaclePos3.x
- 0000064B  66| A1				mov ax, carPos.y
-	   00000886 R
- 00000651  66| 83 C0 05				add ax, 5
-					.IF ax >= obstaclePos3.y
- 0000065E  66| 8B 1D				mov bx, obstaclePos3.y
-	   00000892 R
- 00000665  66| 83 C3 05				add bx, 5
-					.IF ax <= bx
- 0000066E  E9 000000B1				jmp END_Page
-					.ENDIF
-					.ENDIF
-					.ENDIF
-
- 00000673			KBCheck:
+ 000001F5			KBCheck:
 					;detect move==============================================================
 					.if check==0
- 0000067C  E8 00000000 E			call ReadKey
+ 000001FE  E8 00000000 E			call ReadKey
 						.IF ax == 4B00h ;LEFT ARROW
- 00000687  C6 05 000008F5 R				mov check, 1
+ 00000209  C6 05 000008F5 R				mov check, 1
 	   01
- 0000068E  66| 83 2D					sub carPos.x, 1
+ 00000210  66| 83 2D					sub carPos.x, 1
 	   00000884 R 01
 						.ENDIF
 						.IF ax == 4d00h ;RIGHT ARROW
- 0000069C  C6 05 000008F5 R				mov check, 1
+ 0000021E  C6 05 000008F5 R				mov check, 1
 	   01
- 000006A3  66| 83 05					add carPos.x, 1
+ 00000225  66| 83 05					add carPos.x, 1
 	   00000884 R 01
 						.ENDIF
 						.IF ax == 011Bh ;ESC
- 000006B1  E9 00000085					jmp END_FUNC
+ 00000233  E9 00000085					jmp END_FUNC
 						.ENDIF
 					
- 000006B6  66| A1				mov ax, carLowerBound.x
+ 00000238  66| A1				mov ax, carLowerBound.x
 	   00000880 R
 						.IF carPos.x == ax ; x lowerbound
- 000006C5  66| 83 05					add carPos.x, 1
+ 00000247  66| 83 05					add carPos.x, 1
 	   00000884 R 01
 						.ENDIF
- 000006CD  66| A1				mov ax, carUpperBound.x
+ 0000024F  66| A1				mov ax, carUpperBound.x
 	   0000087C R
 						.IF carPos.x == ax ; x upperbound
- 000006DC  66| 83 2D					sub carPos.x, 1
+ 0000025E  66| 83 2D					sub carPos.x, 1
 	   00000884 R 01
 						.ENDIF
 						.IF check==1
- 000006ED  E9 FFFFF9C3					jmp START
+ 0000026F  E9 FFFFFE41					jmp START
 						.ENDIF
 					.ENDIF
 					;detect move===============================================================
 
 
- 000006F2			time_buffer:
+ 00000274			time_buffer:
 					INVOKE GetLocalTime, ADDR                                             sysTime   ; Get the current system time
- 000006FC  0F B7 05			movzx eax, sysTime.wMilliseconds  ; Load milliseconds part of the time
+ 0000027E  0F B7 05			movzx eax, sysTime.wMilliseconds  ; Load milliseconds part of the time
 	   000008F3 R
- 00000703  BA 00000000			mov edx,0
- 00000708  66| F7 35			div timer
+ 00000285  BA 00000000			mov edx,0
+ 0000028A  66| F7 35			div timer
 	   000008DD R
- 0000070F  83 FA 32			cmp edx, 50         ; Check if milliseconds >= 49
- 00000712  0F 8D FFFFFF5B		jge KBCheck
- 00000718  C6 05 000008F5 R		mov check, 0
+ 00000291  83 FA 32			cmp edx, 50         ; Check if milliseconds >= 49
+ 00000294  0F 8D FFFFFF5B		jge KBCheck
+ 0000029A  C6 05 000008F5 R		mov check, 0
 	   00
- 0000071F  E9 FFFFF96F			jmp timeline      ; Repeat 'count' times
+ 000002A1  E9 FFFFFDED			jmp timeline      ; Repeat 'count' times
 
- 00000724			END_Page:
- 00000724  E8 00000000 E		call ClrScr
- 00000729  66| 83 2D			sub PagePos.y, 28
+ 000002A6			END_Page:
+ 000002A6  E8 00000000 E		call ClrScr
+ 000002AB  66| 83 2D			sub PagePos.y, 28
 	   00000002 R 1C
- 00000731  B9 0000001B			mov ecx, 27
- 00000736  E9 FFFFF8D6			jmp Start_Page
- 0000073B			END_FUNC:
+ 000002B3  B9 0000001B			mov ecx, 27
+ 000002B8  E9 FFFFFD54			jmp Start_Page
+ 000002BD			END_FUNC:
 					exit
 
- 00000742			InitObstacle1 PROC
- 00000742  66| 33 DB			xor bx, bx
- 00000745			SetObstacle1X:
- 00000745  66| B8 001E			mov ax, 30
- 00000749  E8 00000000 E		call RandomRange
- 0000074E  66| 03 D8			add bx, ax
- 00000751  66| 83 FB 2D			cmp	bx, 45
- 00000755  72 EE			jb SetObstacle1X
- 00000757  66| 89 1D			mov obstaclePos1.x, bx
+ 000002C4			SetObstacle1 PROC
+ 000002C4  66| 33 DB			xor bx, bx
+ 000002C7			SetObstacle1X:
+ 000002C7  66| B8 0018			mov ax, 24
+ 000002CB  E8 00000000 E		call RandomRange
+ 000002D0  66| 03 D8			add bx, ax
+ 000002D3  66| 83 FB 32			cmp	bx, 50
+ 000002D7  72 EE			jb SetObstacle1X
+ 000002D9  66| 89 1D			mov obstaclePos1.x, bx
 	   00000888 R
- 0000075E			SetObstacle1Y:
- 0000075E  66| 33 DB			xor bx, bx
- 00000761  66| B8 0014			mov ax, 20
- 00000765  E8 00000000 E		call RandomRange
- 0000076A  66| 8B D8			mov bx, ax
- 0000076D  66| 89 1D			mov obstaclePos1.y, bx
+ 000002E0			SetObstacle1Y:
+ 000002E0  66| 33 DB			xor bx, bx
+ 000002E3  66| 8B 1D			mov bx, obstaclePos3.y
+	   00000892 R
+ 000002EA  66| 83 EB 0F			sub bx, 15
+ 000002EE  66| 89 1D			mov obstaclePos1.y, bx
 	   0000088A R
 
- 00000774  C3				ret
- 00000775			InitObstacle1 ENDP
+ 000002F5  C3				ret
+ 000002F6			SetObstacle1 ENDP
 
- 00000775			SetObstacle2 PROC
- 00000775  66| 33 DB			xor bx, bx
- 00000778			SetObstacle2X:
- 00000778  66| B8 001E			mov ax, 30
- 0000077C  E8 00000000 E		call RandomRange
- 00000781  66| 03 D8			add bx, ax
- 00000784  66| 83 FB 2D			cmp	bx, 45
- 00000788  72 EE			jb SetObstacle2X
- 0000078A  66| 89 1D			mov obstaclePos2.x, bx
+ 000002F6			SetObstacle2 PROC
+ 000002F6  66| 33 DB			xor bx, bx
+ 000002F9			SetObstacle2X:
+ 000002F9  66| B8 001E			mov ax, 30
+ 000002FD  E8 00000000 E		call RandomRange
+ 00000302  66| 03 D8			add bx, ax
+ 00000305  66| 83 FB 2D			cmp	bx, 45
+ 00000309  72 EE			jb SetObstacle2X
+ 0000030B  66| 89 1D			mov obstaclePos2.x, bx
 	   0000088C R
- 00000791			SetObstacle2Y:
- 00000791  66| 33 DB			xor bx, bx
- 00000794  66| 8B 1D			mov bx, obstaclePos1.y
+ 00000312			SetObstacle2Y:
+ 00000312  66| 33 DB			xor bx, bx
+ 00000315  66| 8B 1D			mov bx, obstaclePos1.y
 	   0000088A R
- 0000079B  66| 83 EB 14			sub bx, 20
- 0000079F  66| 89 1D			mov obstaclePos2.y, bx
+ 0000031C  66| 83 EB 14			sub bx, 20
+ 00000320  66| 89 1D			mov obstaclePos2.y, bx
 	   0000088E R
 
- 000007A6  C3				ret
- 000007A7			SetObstacle2 ENDP
+ 00000327  C3				ret
+ 00000328			SetObstacle2 ENDP
 
- 000007A7			SetObstacle3 PROC
- 000007A7  66| 33 DB			xor bx, bx
- 000007AA			SetObstacle3X:
- 000007AA  66| B8 001E			mov ax, 30
- 000007AE  E8 00000000 E		call RandomRange
- 000007B3  66| 03 D8			add bx, ax
- 000007B6  66| 83 FB 2D			cmp	bx, 45
- 000007BA  72 EE			jb SetObstacle3X
- 000007BC  66| 89 1D			mov obstaclePos3.x, bx
+ 00000328			SetObstacle3 PROC
+ 00000328  66| 33 DB			xor bx, bx
+ 0000032B			SetObstacle3X:
+ 0000032B  66| B8 001E			mov ax, 30
+ 0000032F  E8 00000000 E		call RandomRange
+ 00000334  66| 03 D8			add bx, ax
+ 00000337  66| 83 FB 2D			cmp	bx, 45
+ 0000033B  72 EE			jb SetObstacle3X
+ 0000033D  66| 89 1D			mov obstaclePos3.x, bx
 	   00000890 R
- 000007C3			SetObstacle3Y:
- 000007C3  66| 33 DB			xor bx, bx
- 000007C6  66| 8B 1D			mov bx, obstaclePos2.y
+ 00000344			SetObstacle3Y:
+ 00000344  66| 33 DB			xor bx, bx
+ 00000347  66| 8B 1D			mov bx, obstaclePos2.y
 	   0000088E R
- 000007CD  66| 83 EB 14			sub bx, 20
- 000007D1  66| 89 1D			mov obstaclePos3.y, bx
+ 0000034E  66| 83 EB 14			sub bx, 20
+ 00000352  66| 89 1D			mov obstaclePos3.y, bx
 	   00000892 R
 
- 000007D8  C3				ret
- 000007D9			SetObstacle3 ENDP
+ 00000359  C3				ret
+ 0000035A			SetObstacle3 ENDP
 
- 000007D9			SetObstacle1 PROC
- 000007D9  66| 33 DB			xor bx, bx
- 000007DC			SetObstacle1X:
- 000007DC  66| B8 0018			mov ax, 24
- 000007E0  E8 00000000 E		call RandomRange
- 000007E5  66| 03 D8			add bx, ax
- 000007E8  66| 83 FB 32			cmp	bx, 50
- 000007EC  72 EE			jb SetObstacle1X
- 000007EE  66| 89 1D			mov obstaclePos1.x, bx
-	   00000888 R
- 000007F5			SetObstacle1Y:
- 000007F5  66| 33 DB			xor bx, bx
- 000007F8  66| 8B 1D			mov bx, obstaclePos3.y
-	   00000892 R
- 000007FF  66| 83 EB 0F			sub bx, 15
- 00000803  66| 89 1D			mov obstaclePos1.y, bx
-	   0000088A R
 
- 0000080A  C3				ret
- 0000080B			SetObstacle1 ENDP
- 0000080B			main ENDP
+ 0000035A			main ENDP
+
+ 0000035A			PrintCarProc PROC USES eax esi ecx,
+				    pos:COORD
+				    
+ 00000360  B9 00000006			mov ecx, 6
+
+ 00000365			Print:
+ 00000365  51			    push ecx
+ 00000366  BE 00000006		    mov esi, 6
+ 0000036B  2B F1		    sub esi, ecx
+ 0000036D  6B F6 08		    imul esi, carWidth
+ 00000370  B8 0000089C R	    mov eax, offset block1
+ 00000375  03 C6		    add eax, esi
+				    INVOKE WriteConsoleOutputCharacter,
+				       outputHandle,    ; console output handle
+				       eax,             ; pointer to the top box line
+				       carWidth,        ; size of box line
+				       pos,             ; coordinates of first char
+				       addr count       ; output count
+
+ 0000038D  66| 83 45 0A		    add pos.y , 1
+	   01
+ 00000392  59			    pop ecx
+ 00000393  E2 D0		    loop Print
+
+ 00000395  66| 83 6D 0A		    sub pos.y , 6 ; Adjust the y-coordinate
+	   06
+				    ret
+ 000003A1			PrintCarProc ENDP
+
+ 000003A1			CrashTest PROC USES esi ebx,
+				    obstaclePos :COORD,
+
+ 000003A6  66| 8B 45 0A			mov ax, obstaclePos.y
+ 000003AA  66| 83 C0 05			add ax, 5
+					.IF ax == carPos.y
+ 000003B7  66| 8B 45 08				mov ax, obstaclePos.x
+ 000003BB  66| 8B 1D				mov bx, carPos.x
+	   00000884 R
+ 000003C2  66| 83 C3 07				add bx, 7
+					.IF ax <= bx
+ 000003CB  66| 83 C0 07				add ax, 7
+					.IF ax >= bx
+ 000003D4  66| B8 0001				mov ax, 1
+						ret
+					.ENDIF
+					.ENDIF
+					.ENDIF
+
+ 000003DE  66| 8B 45 0A			mov ax, obstaclePos.y
+ 000003E2  66| 83 C0 05			add ax, 5
+					.IF ax == carPos.y
+ 000003EF  66| 8B 45 08				mov ax, obstaclePos.x
+					.IF ax <= carPos.x
+ 000003FC  66| 83 C0 07				add ax, 7
+					.IF ax >= carPos.x
+ 00000409  66| B8 0001				mov ax, 1
+						ret
+					.ENDIF
+					.ENDIF
+					.ENDIF
+
+ 00000413  66| 8B 45 08			mov ax, obstaclePos.x
+ 00000417  66| 83 C0 07			add ax, 7
+					.IF ax == carPos.x
+ 00000424  66| 8B 45 0A				mov ax, obstaclePos.y
+					.IF ax <= carPos.y
+ 00000431  66| 83 C0 05				add ax, 5
+					.IF ax >= carPos.y
+ 0000043E  66| B8 0001				mov ax, 1
+						ret
+					.ENDIF
+					.ENDIF
+					.ENDIF
+
+ 00000448  66| A1			mov ax, carPos.x
+	   00000884 R
+ 0000044E  66| 83 C0 07			add ax, 7
+					.IF ax == obstaclePos.x
+ 00000458  66| A1				mov ax, carPos.y
+	   00000886 R
+					.IF ax >= obstaclePos.y
+ 00000464  66| 8B 5D 0A				mov bx, obstaclePos.y
+ 00000468  66| 83 C3 05				add bx, 5
+					.IF ax <= bx
+ 00000471  66| B8 0001				mov ax, 1
+						ret
+					.ENDIF
+					.ENDIF
+					.ENDIF
+
+ 0000047B  66| 8B 45 08			mov ax, obstaclePos.x
+ 0000047F  66| 83 C0 07			add ax, 7
+					.IF ax == carPos.x
+ 0000048C  66| 8B 45 0A				mov ax, obstaclePos.y
+ 00000490  66| 8B 1D				mov bx, carPos.y
+	   00000886 R
+ 00000497  66| 83 C3 05				add bx, 5
+					.IF ax <= bx
+ 000004A0  66| 83 C0 05				add ax, 5
+					.IF ax >= bx
+ 000004A9  66| B8 0001				mov ax, 1
+						ret
+					.ENDIF
+					.ENDIF
+					.ENDIF
+
+ 000004B3  66| A1			mov ax, carPos.x
+	   00000884 R
+ 000004B9  66| 83 C0 07			add ax, 7
+					.IF ax == obstaclePos.x
+ 000004C3  66| A1				mov ax, carPos.y
+	   00000886 R
+ 000004C9  66| 83 C0 05				add ax, 5
+					.IF ax >= obstaclePos.y
+ 000004D3  66| 8B 5D 0A				mov bx, obstaclePos.y
+ 000004D7  66| 83 C3 05				add bx, 5
+					.IF ax <= bx
+ 000004E0  66| B8 0001				mov ax, 1
+						ret
+					.ENDIF
+					.ENDIF
+					.ENDIF
+
+					ret
+ 000004F0			CrashTest ENDP
 
 				END main
-Microsoft (R) Macro Assembler Version 14.37.32824.0	    12/18/23 14:10:55
+Microsoft (R) Macro Assembler Version 14.37.32824.0	    01/08/24 17:27:24
 test.asm						     Symbols 2 - 1
 
 
@@ -1257,7 +1012,7 @@ Segments and Groups:
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
 _DATA  . . . . . . . . . . . . .	32 Bit	 000008F6 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 0000080B Para	  Public  'CODE'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000004F0 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -1267,6 +1022,8 @@ Procedures, parameters, and locals:
 CloseFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Clrscr . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CrashTest  . . . . . . . . . . .	P Near	 000003A1 _TEXT	Length= 0000014F Public STDCALL
+  obstaclePos  . . . . . . . . .	DWord	 bp + 00000008
 CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 CreateOutputFile . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -1303,9 +1060,6 @@ HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-InitObstacle1  . . . . . . . . .	P Near	 00000742 _TEXT	Length= 00000033 Public STDCALL
-  SetObstacle1X  . . . . . . . .	L Near	 00000745 _TEXT	
-  SetObstacle1Y  . . . . . . . .	L Near	 0000075E _TEXT	
 IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -1315,6 +1069,9 @@ OpenInputFile  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 ParseDecimal32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ParseInteger32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 PeekConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+PrintCarProc . . . . . . . . . .	P Near	 0000035A _TEXT	Length= 00000047 Public STDCALL
+  pos  . . . . . . . . . . . . .	DWord	 bp + 00000008
+  Print  . . . . . . . . . . . .	L Near	 00000365 _TEXT	
 Random32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 RandomRange  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Randomize  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -1339,15 +1096,15 @@ SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 SetConsoleWindowInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-SetObstacle1 . . . . . . . . . .	P Near	 000007D9 _TEXT	Length= 00000032 Public STDCALL
-  SetObstacle1X  . . . . . . . .	L Near	 000007DC _TEXT	
-  SetObstacle1Y  . . . . . . . .	L Near	 000007F5 _TEXT	
-SetObstacle2 . . . . . . . . . .	P Near	 00000775 _TEXT	Length= 00000032 Public STDCALL
-  SetObstacle2X  . . . . . . . .	L Near	 00000778 _TEXT	
-  SetObstacle2Y  . . . . . . . .	L Near	 00000791 _TEXT	
-SetObstacle3 . . . . . . . . . .	P Near	 000007A7 _TEXT	Length= 00000032 Public STDCALL
-  SetObstacle3X  . . . . . . . .	L Near	 000007AA _TEXT	
-  SetObstacle3Y  . . . . . . . .	L Near	 000007C3 _TEXT	
+SetObstacle1 . . . . . . . . . .	P Near	 000002C4 _TEXT	Length= 00000032 Public STDCALL
+  SetObstacle1X  . . . . . . . .	L Near	 000002C7 _TEXT	
+  SetObstacle1Y  . . . . . . . .	L Near	 000002E0 _TEXT	
+SetObstacle2 . . . . . . . . . .	P Near	 000002F6 _TEXT	Length= 00000032 Public STDCALL
+  SetObstacle2X  . . . . . . . .	L Near	 000002F9 _TEXT	
+  SetObstacle2Y  . . . . . . . .	L Near	 00000312 _TEXT	
+SetObstacle3 . . . . . . . . . .	P Near	 00000328 _TEXT	Length= 00000032 Public STDCALL
+  SetObstacle3X  . . . . . . . .	L Near	 0000032B _TEXT	
+  SetObstacle3Y  . . . . . . . .	L Near	 00000344 _TEXT	
 SetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ShowFPUStack . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -1378,24 +1135,24 @@ WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
-start@0  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000080B Public STDCALL
+start@0  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000035A Public STDCALL
   Start_Page . . . . . . . . . .	L Near	 00000011 _TEXT	
   INITIAL  . . . . . . . . . . .	L Near	 00000056 _TEXT	
   Obstacle . . . . . . . . . . .	L Near	 0000007F _TEXT	
   timeline . . . . . . . . . . .	L Near	 00000093 _TEXT	
   START  . . . . . . . . . . . .	L Near	 000000B5 _TEXT	
   PrintRoad  . . . . . . . . . .	L Near	 000000D9 _TEXT	
-  PrintCar . . . . . . . . . . .	L Near	 0000012C _TEXT	
-  PrintObstacle1 . . . . . . . .	L Near	 00000171 _TEXT	
-  PrintObstacle2 . . . . . . . .	L Near	 000001B6 _TEXT	
-  PrintObstacle3 . . . . . . . .	L Near	 000001FB _TEXT	
-  Speed  . . . . . . . . . . . .	L Near	 0000023A _TEXT	
-  CheckObstacle  . . . . . . . .	L Near	 0000026E _TEXT	
-  CrashTest  . . . . . . . . . .	L Near	 0000029B _TEXT	
-  KBCheck  . . . . . . . . . . .	L Near	 00000673 _TEXT	
-  time_buffer  . . . . . . . . .	L Near	 000006F2 _TEXT	
-  END_Page . . . . . . . . . . .	L Near	 00000724 _TEXT	
-  END_FUNC . . . . . . . . . . .	L Near	 0000073B _TEXT	
+  PrintCar . . . . . . . . . . .	L Near	 00000126 _TEXT	
+  PrintObstacle1 . . . . . . . .	L Near	 00000131 _TEXT	
+  PrintObstacle2 . . . . . . . .	L Near	 0000013C _TEXT	
+  PrintObstacle3 . . . . . . . .	L Near	 00000147 _TEXT	
+  Speed  . . . . . . . . . . . .	L Near	 00000152 _TEXT	
+  CheckObstacle  . . . . . . . .	L Near	 00000186 _TEXT	
+  TestCar  . . . . . . . . . . .	L Near	 000001B3 _TEXT	
+  KBCheck  . . . . . . . . . . .	L Near	 000001F5 _TEXT	
+  time_buffer  . . . . . . . . .	L Near	 00000274 _TEXT	
+  END_Page . . . . . . . . . . .	L Near	 000002A6 _TEXT	
+  END_FUNC . . . . . . . . . . .	L Near	 000002BD _TEXT	
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 
 

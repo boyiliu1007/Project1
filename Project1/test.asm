@@ -1,5 +1,10 @@
 INCLUDE Irvine32.inc
 
+PrintCarProc PROTO,
+	pos:COORD 
+CrashTest PROTO, 
+	obstaclePos: COORD,
+
 carWidth = 8
 roadWidth = 1
 graphWidth = 80
@@ -150,100 +155,22 @@ PrintRoad:
 	pop ecx
 	;print Road==============================================================
 
-	push ecx
-	mov ecx, 6
+	
 PrintCar:
-	; Print car blocks at the car position=======================================
-	push ecx
-	mov esi, 6
-	sub esi, ecx
-	imul esi, carWidth
-	mov eax, offset block1
-	add eax, esi
-	INVOKE WriteConsoleOutputCharacter,
-	   outputHandle,	; console output handle
-	   eax,	; pointer to the top box line
-	   carWidth ,	; size of box line
-	   carPos,	; coordinates of first char
-	   addr count	; output count
-	add carPos.y, 1
-	pop ecx
-	loop PrintCar
-	pop ecx
-	sub carPos.y, 6
-	; Print car blocks at the car position=======================================
-
-
-
-	push ecx
-	mov ecx, 6
+	INVOKE PrintCarProc,
+		carPos
+	
 PrintObstacle1:
-	; Print car blocks at the car position=======================================
-	push ecx
-	mov esi, 6
-	sub esi, ecx
-	imul esi, carWidth
-	mov eax, offset block1
-	add eax, esi
-	INVOKE WriteConsoleOutputCharacter,
-	   outputHandle,	; console output handle
-	   eax,	; pointer to the top box line
-	   carWidth ,	; size of box line
-	   obstaclePos1,	; coordinates of first char
-	   addr count	; output count
-	add obstaclePos1.y, 1
-	pop ecx
-	loop PrintObstacle1
-	pop ecx
-	sub obstaclePos1.y, 6
-	; Print car blocks at the car position=======================================
+	INVOKE PrintCarProc,
+		obstaclePos1
 	
-	
-	push ecx
-	mov ecx, 6
 PrintObstacle2:
-	; Print car blocks at the car position=======================================
-	push ecx
-	mov esi, 6
-	sub esi, ecx
-	imul esi, carWidth
-	mov eax, offset block1
-	add eax, esi
-	INVOKE WriteConsoleOutputCharacter,
-	   outputHandle,	; console output handle
-	   eax,	; pointer to the top box line
-	   carWidth ,	; size of box line
-	   obstaclePos2,	; coordinates of first char
-	   addr count	; output count
-	add obstaclePos2.y, 1
-	pop ecx
-	loop PrintObstacle2
-	pop ecx
-	sub obstaclePos2.y, 6
-	; Print car blocks at the car position=======================================
+	INVOKE PrintCarProc,
+		obstaclePos2
 	
-	push ecx
-	mov ecx, 6
 PrintObstacle3:
-	; Print car blocks at the car position=======================================
-	push ecx
-	mov esi, 6
-	sub esi, ecx
-	imul esi, carWidth
-	mov eax, offset block1
-	add eax, esi
-	INVOKE WriteConsoleOutputCharacter,
-	   outputHandle,	; console output handle
-	   eax,	; pointer to the top box line
-	   carWidth ,	; size of box line
-	   obstaclePos3,	; coordinates of first char
-	   addr count	; output count
-	add obstaclePos3.y, 1
-	pop ecx
-	loop PrintObstacle3
-	pop ecx
-	sub obstaclePos3.y, 6
-	; Print car blocks at the car position=======================================
+	INVOKE PrintCarProc,
+		obstaclePos3
 	
 
 Speed:
@@ -268,243 +195,20 @@ CheckObstacle:
 		call SetObstacle3
 	.ENDIF
 
-CrashTest:
-	mov ax, obstaclePos1.y
-	add ax, 5
-	.IF ax == carPos.y
-		mov ax, obstaclePos1.x
-		mov bx, carPos.x
-		add bx, 7
-	.IF ax <= bx
-		add ax, 7
-	.IF ax >= bx
+TestCar:
+	INVOKE CrashTest, obstaclePos1
+	.IF ax == 1
 		jmp END_Page
 	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, obstaclePos1.y
-	add ax, 5
-	.IF ax == carPos.y
-		mov ax, obstaclePos1.x
-	.IF ax <= carPos.x
-		add ax, 7
-	.IF ax >= carPos.x
+	INVOKE CrashTest, obstaclePos2
+	.IF ax == 1
 		jmp END_Page
 	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, obstaclePos1.x
-	add ax, 7
-	.IF ax == carPos.x
-		mov ax, obstaclePos1.y
-	.IF ax <= carPos.y
-		add ax, 5
-	.IF ax >= carPos.y
+	Invoke CrashTest, obstaclePos3
+	.IF ax == 1
 		jmp END_Page
 	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, carPos.x
-	add ax, 7
-	.IF ax == obstaclePos1.x
-		mov ax, carPos.y
-	.IF ax >= obstaclePos1.y
-		mov bx, obstaclePos1.y
-		add bx, 5
-	.IF ax <= bx
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, obstaclePos1.x
-	add ax, 7
-	.IF ax == carPos.x
-		mov ax, obstaclePos1.y
-		mov bx, carPos.y
-		add bx, 5
-	.IF ax <= bx
-		add ax, 5
-	.IF ax >= bx
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, carPos.x
-	add ax, 7
-	.IF ax == obstaclePos1.x
-		mov ax, carPos.y
-		add ax, 5
-	.IF ax >= obstaclePos1.y
-		mov bx, obstaclePos1.y
-		add bx, 5
-	.IF ax <= bx
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, obstaclePos2.y
-	add ax, 5
-	.IF ax == carPos.y
-		mov ax, obstaclePos2.x
-		mov bx, carPos.x
-		add bx, 7
-	.IF ax <= bx
-		add ax, 7
-	.IF ax >= bx
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, obstaclePos2.y
-	add ax, 5
-	.IF ax == carPos.y
-		mov ax, obstaclePos2.x
-	.IF ax <= carPos.x
-		add ax, 7
-	.IF ax >= carPos.x
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, obstaclePos2.x
-	add ax, 7
-	.IF ax == carPos.x
-		mov ax, obstaclePos2.y
-	.IF ax <= carPos.y
-		add ax, 5
-	.IF ax >= carPos.y
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, carPos.x
-	add ax, 7
-	.IF ax == obstaclePos2.x
-		mov ax, carPos.y
-	.IF ax >= obstaclePos2.y
-		mov bx, obstaclePos2.y
-		add bx, 5
-	.IF ax <= bx
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, obstaclePos2.x
-	add ax, 7
-	.IF ax == carPos.x
-		mov ax, obstaclePos2.y
-		mov bx, carPos.y
-		add bx, 5
-	.IF ax <= bx
-		add ax, 5
-	.IF ax >= bx
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, carPos.x
-	add ax, 7
-	.IF ax == obstaclePos2.x
-		mov ax, carPos.y
-		add ax, 5
-	.IF ax >= obstaclePos2.y
-		mov bx, obstaclePos2.y
-		add bx, 5
-	.IF ax <= bx
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, obstaclePos3.y
-	add ax, 5
-	.IF ax == carPos.y
-		mov ax, obstaclePos3.x
-		mov bx, carPos.x
-		add bx, 7
-	.IF ax <= bx
-		add ax, 7
-	.IF ax >= bx
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, obstaclePos3.y
-	add ax, 5
-	.IF ax == carPos.y
-		mov ax, obstaclePos3.x
-	.IF ax <= carPos.x
-		add ax, 7
-	.IF ax >= carPos.x
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, obstaclePos3.x
-	add ax, 7
-	.IF ax == carPos.x
-		mov ax, obstaclePos3.y
-	.IF ax <= carPos.y
-		add ax, 5
-	.IF ax >= carPos.y
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, carPos.x
-	add ax, 7
-	.IF ax == obstaclePos3.x
-		mov ax, carPos.y
-	.IF ax >= obstaclePos3.y
-		mov bx, obstaclePos3.y
-		add bx, 5
-	.IF ax <= bx
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, obstaclePos3.x
-	add ax, 7
-	.IF ax == carPos.x
-		mov ax, obstaclePos3.y
-		mov bx, carPos.y
-		add bx, 5
-	.IF ax <= bx
-		add ax, 5
-	.IF ax >= bx
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
-
-	mov ax, carPos.x
-	add ax, 7
-	.IF ax == obstaclePos3.x
-		mov ax, carPos.y
-		add ax, 5
-	.IF ax >= obstaclePos3.y
-		mov bx, obstaclePos3.y
-		add bx, 5
-	.IF ax <= bx
-		jmp END_Page
-	.ENDIF
-	.ENDIF
-	.ENDIF
+	
 
 KBCheck:
 	;detect move==============================================================
@@ -555,24 +259,23 @@ END_Page:
 END_FUNC:
 	exit
 
-InitObstacle1 PROC
+SetObstacle1 PROC
 	xor bx, bx
 SetObstacle1X:
-	mov ax, 30
+	mov ax, 24
 	call RandomRange
 	add bx, ax
-	cmp	bx, 45
+	cmp	bx, 50
 	jb SetObstacle1X
 	mov obstaclePos1.x, bx
 SetObstacle1Y:
 	xor bx, bx
-	mov ax, 20
-	call RandomRange
-	mov bx, ax
+	mov bx, obstaclePos3.y
+	sub bx, 15
 	mov obstaclePos1.y, bx
 
 	ret
-InitObstacle1 ENDP
+SetObstacle1 ENDP
 
 SetObstacle2 PROC
 	xor bx, bx
@@ -610,23 +313,125 @@ SetObstacle3Y:
 	ret
 SetObstacle3 ENDP
 
-SetObstacle1 PROC
-	xor bx, bx
-SetObstacle1X:
-	mov ax, 24
-	call RandomRange
-	add bx, ax
-	cmp	bx, 50
-	jb SetObstacle1X
-	mov obstaclePos1.x, bx
-SetObstacle1Y:
-	xor bx, bx
-	mov bx, obstaclePos3.y
-	sub bx, 15
-	mov obstaclePos1.y, bx
+
+main ENDP
+
+PrintCarProc PROC USES eax esi ecx,
+    pos:COORD
+    
+	mov ecx, 6
+
+Print:
+    push ecx
+    mov esi, 6
+    sub esi, ecx
+    imul esi, carWidth
+    mov eax, offset block1
+    add eax, esi
+    INVOKE WriteConsoleOutputCharacter,
+       outputHandle,    ; console output handle
+       eax,             ; pointer to the top box line
+       carWidth,        ; size of box line
+       pos,             ; coordinates of first char
+       addr count       ; output count
+
+    add pos.y , 1
+    pop ecx
+    loop Print
+
+    sub pos.y , 6 ; Adjust the y-coordinate
+    ret
+PrintCarProc ENDP
+
+CrashTest PROC USES esi ebx,
+    obstaclePos :COORD,
+
+	mov ax, obstaclePos.y
+	add ax, 5
+	.IF ax == carPos.y
+		mov ax, obstaclePos.x
+		mov bx, carPos.x
+		add bx, 7
+	.IF ax <= bx
+		add ax, 7
+	.IF ax >= bx
+		mov ax, 1
+		ret
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos.y
+	add ax, 5
+	.IF ax == carPos.y
+		mov ax, obstaclePos.x
+	.IF ax <= carPos.x
+		add ax, 7
+	.IF ax >= carPos.x
+		mov ax, 1
+		ret
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos.x
+	add ax, 7
+	.IF ax == carPos.x
+		mov ax, obstaclePos.y
+	.IF ax <= carPos.y
+		add ax, 5
+	.IF ax >= carPos.y
+		mov ax, 1
+		ret
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, carPos.x
+	add ax, 7
+	.IF ax == obstaclePos.x
+		mov ax, carPos.y
+	.IF ax >= obstaclePos.y
+		mov bx, obstaclePos.y
+		add bx, 5
+	.IF ax <= bx
+		mov ax, 1
+		ret
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, obstaclePos.x
+	add ax, 7
+	.IF ax == carPos.x
+		mov ax, obstaclePos.y
+		mov bx, carPos.y
+		add bx, 5
+	.IF ax <= bx
+		add ax, 5
+	.IF ax >= bx
+		mov ax, 1
+		ret
+	.ENDIF
+	.ENDIF
+	.ENDIF
+
+	mov ax, carPos.x
+	add ax, 7
+	.IF ax == obstaclePos.x
+		mov ax, carPos.y
+		add ax, 5
+	.IF ax >= obstaclePos.y
+		mov bx, obstaclePos.y
+		add bx, 5
+	.IF ax <= bx
+		mov ax, 1
+		ret
+	.ENDIF
+	.ENDIF
+	.ENDIF
 
 	ret
-SetObstacle1 ENDP
-main ENDP
+CrashTest ENDP
 
 END main
